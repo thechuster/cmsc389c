@@ -1,5 +1,5 @@
-# cmsc389c
-CMSC389C Final Project
+# CMSC389C
+CMSC389C Smart Contract (Albert Chu, Josh Lord)
 
 ## Criteria
 * Must be able to handle a variable amount of participants
