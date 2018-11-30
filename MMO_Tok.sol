@@ -1,37 +1,58 @@
-import "brower/MMO_TOK_Interface.sol";
-
-contract MMO_TOK is ERC721 {
+contract MMO_TOK {
     address SellingUser;
     uint StartingPrice;
     string Attributes;
     
-    uint ActionEndTime;
-    bool ended;
+    uint MaxDuration = 24 hours;
+    uint MinDuration = 1 hours;
+    uint AuctionEndTime;
+    bool Ended;
     
     address HighestBidder;
-    unit HighestBid;
+    uint HighestBid;
     
-    constructor (address SellingUser, uint StartingPrice, string Attributes) public {
-        this.SellingUser = SellingUser;
-        this.StartingPrice = StartingPrice;
-        this.Attributes = Attributes;
+    uint Bidders;
+    
+    constructor (address _SellingUser, uint _StartingPrice, string memory _Attributes, uint _Duration) public {
+        this.SellingUser = _SellingUser;
+        this.StartingPrice = _StartingPrice;
+        this.Attributes = _Attributes;
         
-        this.ended = false;
+        this.Ended = false;
+        this.Bidders = 0;
+        
+        if (_Duration >= MinDuration && _Duration <= MaxDuration) {
+            this.AuctionEndTime = now + _Duration;
+        } else if (_Duration < MinDuration) {
+            this.AuctionEndTime = now + MinDuration;
+        } else {
+            this.AuctionEndTime = now + MaxDuration; 
+        }
     }
     
     function CreateBid(address Bidder, uint Bid) public returns (bool) {
-        if (ended) {
-            return false;
-        }
+        require(!Ended, "Auction has ended.");
         
         if (Bid > HighestBid && Bid >= StartingPrice) {
-            // Check Bidders Balance
-            HighestBidder = Bidder;
-            HighestBid = Bid;
+            if (balanceOf(Bidder) >= Bid) { // correct way to find highest bidder?
+                HighestBidder = Bidder;
+                HighestBid = Bid;
             
-            return true;
+                Bidders += 0;
+            
+                return true;
+            }
         }
         
         return false;
+    }
+    
+
+    function AuctionEnd() public {
+        require(now >= AuctionEndTime, "Auction hasn't ended yet.");
+        require(!ended, "This function has not been called.");
+
+        ended = true;
+        HighestBidder.transfer(highestBid);
     }
 }
