@@ -1,7 +1,13 @@
+pragma solidity ^0.4.6;
+
 contract MMO_TOK {
+    struct Item {
+        string Attributes;
+    }
+    
     address SellingUser;
     uint StartingPrice;
-    string Attributes;
+    Item Item;
     
     uint MaxDuration = 24 hours;
     uint MinDuration = 1 hours;
@@ -13,13 +19,17 @@ contract MMO_TOK {
     
     uint Bidders;
     
-    constructor (address _SellingUser, uint _StartingPrice, string memory _Attributes, uint _Duration) public {
+    address[] ProhibitedUser = new address[](256);
+    
+    constructor (address _SellingUser, uint _StartingPrice, string memory _Attributes, uint _Duration, Item _Item) public {
         this.SellingUser = _SellingUser;
         this.StartingPrice = _StartingPrice;
-        this.Attributes = _Attributes;
         
         this.Ended = false;
         this.Bidders = 0;
+        
+        this.Item = _Item;
+        this.Item.Attributes += _Attributes;
         
         if (_Duration >= MinDuration && _Duration <= MaxDuration) {
             this.AuctionEndTime = now + _Duration;
@@ -50,9 +60,9 @@ contract MMO_TOK {
 
     function AuctionEnd() public {
         require(now >= AuctionEndTime, "Auction hasn't ended yet.");
-        require(!ended, "This function has not been called.");
+        require(!Ended, "This function has not been called.");
 
-        ended = true;
-        HighestBidder.transfer(highestBid);
+        Ended = true;
+        HighestBidder.transfer(item);
     }
 }
