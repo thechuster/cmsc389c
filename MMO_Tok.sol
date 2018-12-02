@@ -2,7 +2,7 @@ pragma solidity ^0.5.0;
 
 import "browser/ERC721.sol";
 
-contract MMO_TOK is ERC721{
+contract MMO_TOK is ERC721 {
     address private Owner;
     uint private StartingPrice;
     string private Attributes;
@@ -91,8 +91,14 @@ contract MMO_TOK is ERC721{
         return false;
     }
 
-    function WithdrawBid() public view {
+    function EndBid() private {
 
+    }
+
+    function WithdrawBid(address _Bidder) public {
+        require(FindBidder(_Bidder));
+        // add code to remove bidder from the bidder array
+        TotalNumberOfBidders--;
     }
 
     function UpdateTime(uint NewTime) OwnerFunc external {
@@ -116,6 +122,15 @@ contract MMO_TOK is ERC721{
     // function Transfer() public payable {
 
     // }
+
+    function FindBidder(address _Bidder) private view returns(bool) {
+        for (uint i = 0; i < 100; i++) {
+            if (BidderArray[i].AddressOfBidder == _Bidder) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     function FindNumberOfBids(address _Bidder) private view returns (uint) {
         for (uint i = 0; i < 100; i++) {
