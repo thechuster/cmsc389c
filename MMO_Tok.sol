@@ -77,7 +77,7 @@ contract MMO_TOK is ERC721 {
         return TotalNumberOfBidders;
     }
 
-     // set limit on bids per participant
+     // TODO: set limit on bids per participant
      function UpdateBid(address Bidder, uint Bid) public returns (bool) {
         if(EndBool == false || TotalNumberOfBidders >= 100) {
             revert();
@@ -91,13 +91,13 @@ contract MMO_TOK is ERC721 {
         return false;
     }
 
-    function EndBid() private {
+    function EndAuction() private {
 
     }
 
     function WithdrawBid(address _Bidder) public {
         require(FindBidder(_Bidder));
-        // add code to remove bidder from the bidder array
+        // TODO: add code to remove bidder from the bidder array
         TotalNumberOfBidders--;
     }
 
@@ -115,11 +115,11 @@ contract MMO_TOK is ERC721 {
             revert();
         }
         else if (SellBool) {
-            // Transfer();
+            // TODO: Transfer();
         }
     }
 
-    // function Transfer() public payable {
+    // TODO:function Transfer() public payable {
 
     // }
 
