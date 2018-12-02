@@ -12,7 +12,7 @@ CMSC389C Smart Contract (Albert Chu, Josh Lord)
 * Allow a user to put an item up for sale.
 * Let multiple different users bid on the item
 * The item price must update to all new and existing bidders
-* Items would be bid with in game currency.
+* Items would be bid with ether.
 * Allow bidding or instant sell
 * Minimum bid
 * Transfer the winning bid to the highest bidder
