@@ -1,6 +1,8 @@
 pragma solidity ^0.5.0;
 
-contract MMO_TOK {
+import "browser/ERC721.sol";
+
+contract MMO_TOK is ERC721{
     address private Owner;
     uint private StartingPrice;
     string private Attributes;
@@ -15,22 +17,34 @@ contract MMO_TOK {
     address private HighestBidder;
     uint private TotalNumberOfBidders;
     uint private HighestBid;
-    bool InstantSell;
+    bool SellBool;
 
     address[] BanList = new address[](2^256-1);
+
     struct Bidder{
-        address Address;
+        address AddressOfBidder;
         uint NumberOfBids;
     }
+    Bidder[] BidderArray;
 
-     constructor (address _Owner, uint _StartingPrice, string memory _Attributes, uint _Duration, bool _InstantSell) public {
+
+    modifier OwnerFunc {
+        require(Owner == msg.sender);
+        _;
+    }
+
+     constructor (address _Owner, uint _StartingPrice,
+     string memory _Attributes, uint _Duration, bool _SellBool,
+     uint _Token_Id) public {
         Owner = _Owner;
         StartingPrice = _StartingPrice;
         Attributes = _Attributes;
         EndBool = false;
-        InstantSell = _InstantSell;
+        SellBool = _SellBool;
         TotalNumberOfBidders = 0;
-        Bidder[] memory BidderArray = new Bidder[](100);
+        Token_Id = _Token_Id;
+        BidderArray = new Bidder[](100);
+
 
         if (_Duration >= MinDuration && _Duration <= MaxDuration) {
             AuctionEndTime = now + _Duration;
@@ -40,9 +54,32 @@ contract MMO_TOK {
             AuctionEndTime = now + MaxDuration;
         }
      }
+
+     function getEndTime() public view returns(uint) {
+        return AuctionEndTime;
+    }
+
+    function getStartingPrice() public view returns(uint) {
+        return StartingPrice;
+    }
+
+    function getHighestBid() public view returns(uint) {
+        if (SellBool == true) {
+            revert();
+        }
+        return HighestBid;
+    }
+
+    function getTotalNumberOfBidders() public view returns(uint) {
+         if (SellBool == true) {
+            revert();
+        }
+        return TotalNumberOfBidders;
+    }
+
      // set limit on bids per participant
      function UpdateBid(address Bidder, uint Bid) public returns (bool) {
-        if(EndBool || TotalNumberOfBidders >= 100) {
+        if(EndBool == false || TotalNumberOfBidders >= 100) {
             revert();
         }
         if (Bid > HighestBid && Bid >= StartingPrice) {
@@ -54,7 +91,11 @@ contract MMO_TOK {
         return false;
     }
 
-    function UpdateTime(uint NewTime) public {
+    function WithdrawBid() public view {
+
+    }
+
+    function UpdateTime(uint NewTime) OwnerFunc external {
         if (AuctionEndTime + NewTime < MaxDuration) {
             AuctionEndTime = AuctionEndTime + NewTime;
         }
@@ -62,28 +103,32 @@ contract MMO_TOK {
             AuctionEndTime = MaxDuration;
         }
     }
-    function Sell(address _Buyer) public {
+
+    function Buy(address _Buyer) public view {
         if (EndBool) {
             revert();
         }
-        Transfer(_Buyer);
+        else if (SellBool) {
+            // Transfer();
+        }
     }
 
-    function Transfer(address _Buyer) public payable {
+    // function Transfer() public payable {
 
-    }
-
-    // function FindNumberOfBids(address _Bidder) private returns (uint) {
-    //     for (uint i = 0; i < 100; i++) {
-    //         if (BidderArray[i].Address == _Bidder) {
-    //             return Bidder[i].NumberOfBids;
-    //         }
-    //     }
     // }
 
-    function EndBid() public{
+    function FindNumberOfBids(address _Bidder) private view returns (uint) {
+        for (uint i = 0; i < 100; i++) {
+            if (BidderArray[i].AddressOfBidder == _Bidder) {
+                return BidderArray[i].NumberOfBids;
+            }
+        }
+    }
+
+    function EndBid() OwnerFunc external{
         EndBool = true;
     }
+
     function AddToBanList(address BannedUser) private {
         BanList.push(BannedUser);
     }
