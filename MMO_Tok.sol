@@ -96,8 +96,9 @@ contract MMO_TOK is ERC721 {
         }
     }
 
+    // Ask how to do this during office hours
     function EndAuction() private {
-
+        ConfirmTransaction = true;
     }
 
     // This allows a bidder to withdraw their bid from the array
@@ -161,6 +162,13 @@ contract MMO_TOK is ERC721 {
     function approve(address _approved, uint256 _tokenId) external payable {
         emit Approval(Owner, _approved, _tokenId);
     }
+
+    // Interface transfer function
+    function transferFrom(address _from, address _to, uint256 _tokenId) external payable {
+
+        emit Transfer(_from, _to, _tokenId);
+    }
+
 
     // TODO:function Transfer() public payable {
 
