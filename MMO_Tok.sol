@@ -6,6 +6,8 @@ contract MMO_TOK is ERC721 {
     address private Owner;
     uint private StartingPrice;
     string private Attributes;
+    mapping (uint => address) TokenOwners; // Use these in a function
+    mapping (uint => string) ItemAttributes; // Use these in a function
     uint private Token_Id;
 
     uint private MaxDuration = 48 hours;
@@ -83,6 +85,7 @@ contract MMO_TOK is ERC721 {
      // TODO: Add more dishonesty checks
      function UpdateBid(address _Bidder, uint _Bid) external {
          CheckAuctionEnd();
+         assert(BlockedUsers[_Bidder] == false);
         if(EndBool == false || TotalNumberOfBidders >= 100 || SellBool == true) {
             revert();
         }
@@ -145,7 +148,7 @@ contract MMO_TOK is ERC721 {
     }
 
     //Function for the owner to manually end the bid.
-    function EndBidding(bool sell) OwnerFunc external{
+    function EndBidding(bool sell) OwnerFunc external {
         EndBool = true;
         if (sell == true) {
             //TODO: Transfer()
@@ -162,3 +165,4 @@ contract MMO_TOK is ERC721 {
         BlockedUsers[BannedUser] = true;
     }
 }
+     
