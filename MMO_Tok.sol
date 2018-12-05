@@ -128,11 +128,13 @@ contract MMO_TOK is ERC721 {
         }
     }
 
+    // Function allows for the owner to instantly tranfer their token to the first buyer.
     function Sell(address _Buyer) external {
         if (EndBool) {
             revert();
         }
         else if (SellBool) {
+            EndBool = true;
             // TODO: Transfer();
         }
     }
