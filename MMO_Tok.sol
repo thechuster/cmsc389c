@@ -6,8 +6,8 @@ contract MMO_TOK is ERC721 {
     address private Owner;
     uint private StartingPrice;
     string private Attributes;
-    mapping (uint => address) TokenOwners; // Use these in a function
-    mapping (uint => string) ItemAttributes; // Use these in a function
+    mapping (uint => address) TokenOwner;
+    mapping (uint => string) ItemAttributes;
     uint private Token_Id;
 
     uint private MaxDuration = 48 hours;
@@ -22,11 +22,6 @@ contract MMO_TOK is ERC721 {
     bool SellBool;
 
     mapping (address => bool) BlockedUsers;
-
-    struct Bidder{
-        address AddressOfBidder;
-        uint NumberOfBids;
-    }
     mapping (address => uint) Bidders;
 
     // Modifier for Owner only functions
@@ -38,10 +33,13 @@ contract MMO_TOK is ERC721 {
     // Constructor for the contract
      constructor (address _Owner, uint _StartingPrice,
      string memory _Attributes, uint _Duration, bool _SellBool,
-     uint _Token_Id) public {
+     uint _Token_Id) internal {
         Owner = _Owner;
         StartingPrice = _StartingPrice;
-        Attributes = _Attributes;
+        Token_Id = _Token_Id;
+        TokenOwner[_Token_Id] = _Owner;
+        ItemAttributes[_Token_Id] = _Attributes;
+        _Attributes = Attributes;
         EndBool = false;
         SellBool = _SellBool;
         TotalNumberOfBidders = 0;
@@ -82,7 +80,7 @@ contract MMO_TOK is ERC721 {
         return TotalNumberOfBidders;
     }
 
-     // TODO: Add more dishonesty checks
+     // Udates the bid whenever someone enters a new bid
      function UpdateBid(address _Bidder, uint _Bid) external {
          CheckAuctionEnd();
          assert(BlockedUsers[_Bidder] == false);
@@ -90,16 +88,22 @@ contract MMO_TOK is ERC721 {
             revert();
         }
         if (_Bid > HighestBid && _Bid >= StartingPrice) {
-                HighestBidder = _Bidder;
-                HighestBid = _Bid;
                 if (Bidders[_Bidder] == 0) {
+                    HighestBidder = _Bidder;
+                    HighestBid = _Bid;
                     TotalNumberOfBidders += 1;
                     Bidders[_Bidder] += 1;
                 }
-                else if (Bidders[_Bidder] >= 100) {
+                else if (Bidders[_Bidder] > 100) {
                     AddToBlockList(_Bidder);
                 }
+                else if (_Bidder == Owner) {
+                    AddToBlockList(Owner);
+                    EndBool = true;
+                }
                 else {
+                    HighestBidder = _Bidder;
+                    HighestBid = _Bid;
                     Bidders[_Bidder] += 1;
                 }
         }
@@ -107,14 +111,15 @@ contract MMO_TOK is ERC721 {
 
     // Checks to see if the auction has ended
     function CheckAuctionEnd() private {
-        if (now == AuctionEndTime){
+        if (now >= AuctionEndTime){
             EndBool = true;
-            //TODO: Transfer
+            TransferToken(Owner, HighestBidder, Token_Id);
         }
     }
 
-    // This allows a bidder to withdraw their bid from the array
+    // This allows a bidder to withdraw their bid from the mapping
     // of bidders and decreases the TotalNumberOfBidders
+    // Once withdrawn the bidder cannot bid again
     function WithdrawBid(address _Bidder) external {
         Bidders[_Bidder] = 0;
         BlockedUsers[_Bidder] = true;
@@ -138,7 +143,8 @@ contract MMO_TOK is ERC721 {
         }
         else if (SellBool) {
             EndBool = true;
-            // TODO: Transfer();
+            Buyer = _Buyer;
+            TransferToken(Owner, _Buyer, Token_Id);
         }
     }
 
@@ -147,17 +153,33 @@ contract MMO_TOK is ERC721 {
         return Bidders[_Bidder];
     }
 
-    //Function for the owner to manually end the bid.
-    function EndBidding(bool sell) OwnerFunc external {
+    // Function for the owner to manually end the bid.
+    function EndBidding(bool confirmtransfer) OwnerFunc external {
         EndBool = true;
-        if (sell == true) {
-            //TODO: Transfer()
+        if (SellBool == false && confirmtransfer == true) {
+            TransferToken(Owner, HighestBidder, Token_Id);
         }
     }
 
-    // TODO: IMPLEMENT TRANSFER
-    function transferFrom(address _from, address _to, uint256 _tokenId) external payable {
-        emit Transfer(_from, _to, _tokenId);
+    // Function that transfers to ownership to the highest bidder or to the buyer
+    // If _from is not owner they are banned, if _to is not the highest
+    function TransferToken(address _from, address _to, uint256 _tokenId) public payable {
+        if (SellBool == false && _to != HighestBidder) {
+            AddToBlockList(_to);
+        }
+        if (SellBool == true && _to != Buyer) {
+            AddToBlockList(_to);
+        }
+        if (TokenOwner[_tokenId] != _from) {
+            AddToBlockList(_from);
+        }
+        // if (ItemAttributes[_tokenId != ItemAttributes[Token_Id]) { FIX THIS
+        //     AddToBlockList(_from);
+        //     AddToBlockList(_to);
+        // }
+        else {
+        TokenOwner[_tokenId] = _to;
+        }
     }
 
     // Function to add user to BlockedUsers
@@ -165,4 +187,3 @@ contract MMO_TOK is ERC721 {
         BlockedUsers[BannedUser] = true;
     }
 }
-     
