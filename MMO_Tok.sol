@@ -1,8 +1,6 @@
 pragma solidity ^0.5.0;
 
-import "browser/ERC721.sol";
-
-contract MMO_TOK is ERC721 {
+contract MMO_TOK {
     address private Owner;
     uint private StartingPrice;
     string private Attributes;
@@ -33,7 +31,7 @@ contract MMO_TOK is ERC721 {
     // Constructor for the contract
      constructor (address _Owner, uint _StartingPrice,
      string memory _Attributes, uint _Duration, bool _SellBool,
-     uint _Token_Id) internal {
+     uint _Token_Id) public {
         Owner = _Owner;
         StartingPrice = _StartingPrice;
         Token_Id = _Token_Id;
@@ -83,7 +81,7 @@ contract MMO_TOK is ERC721 {
      // Udates the bid whenever someone enters a new bid
      function UpdateBid(address _Bidder, uint _Bid) external {
          CheckAuctionEnd();
-         assert(BlockedUsers[_Bidder] == false);
+         require(BlockedUsers[_Bidder] == false);
         if(EndBool == false || TotalNumberOfBidders >= 100 || SellBool == true) {
             revert();
         }
@@ -173,10 +171,6 @@ contract MMO_TOK is ERC721 {
         if (TokenOwner[_tokenId] != _from) {
             AddToBlockList(_from);
         }
-        // if (ItemAttributes[_tokenId != ItemAttributes[Token_Id]) { FIX THIS
-        //     AddToBlockList(_from);
-        //     AddToBlockList(_to);
-        // }
         else {
         TokenOwner[_tokenId] = _to;
         }
