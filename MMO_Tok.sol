@@ -162,6 +162,7 @@ contract MMO_TOK {
     // Function that transfers to ownership to the highest bidder or to the buyer
     // If _from is not owner they are banned, if _to is not the highest
     function TransferToken(address _from, address _to, uint256 _tokenId) public payable {
+        require(EndBool == true);
         if (SellBool == false && _to != HighestBidder) {
             AddToBlockList(_to);
         }
