@@ -44,11 +44,11 @@ contract MMO_TOK {
         Token_Id = _Token_Id;
 
         if (_Duration >= MinDuration && _Duration <= MaxDuration) {
-            AuctionEndTime = now + _Duration;
+            AuctionEndTime = block.timestamp + _Duration;
         } else if (_Duration < MinDuration) {
-            AuctionEndTime = now + MinDuration;
+            AuctionEndTime = block.timestamp + MinDuration;
         } else {
-            AuctionEndTime = now + MaxDuration;
+            AuctionEndTime = block.timestamp + MaxDuration;
         }
      }
 
@@ -82,7 +82,7 @@ contract MMO_TOK {
      function UpdateBid(address _Bidder, uint _Bid) external {
          CheckAuctionEnd();
          require(BlockedUsers[_Bidder] == false);
-        if(EndBool == false || TotalNumberOfBidders >= 100 || SellBool == true) {
+        if(EndBool == true || TotalNumberOfBidders >= 100 || SellBool == true) {
             revert();
         }
         if (_Bid > HighestBid && _Bid >= StartingPrice) {
@@ -109,7 +109,7 @@ contract MMO_TOK {
 
     // Checks to see if the auction has ended
     function CheckAuctionEnd() private {
-        if (now >= AuctionEndTime){
+        if (block.timestamp >= AuctionEndTime){
             EndBool = true;
             TransferToken(Owner, HighestBidder, Token_Id);
         }
@@ -135,7 +135,7 @@ contract MMO_TOK {
     }
 
     // Function allows for the owner to instantly tranfer their token to the first buyer.
-    function Sell(address _Buyer) external {
+    function Buy(address _Buyer) external {
         if (EndBool) {
             revert();
         }
